@@ -1,0 +1,36 @@
+language: java
+script: boot test
+install:
+  - mkdir -p ~/bin
+  - export PATH=~/bin:$PATH
+  # Could use `latest` tag instead of version number
+  - curl -L https://github.com/boot-clj/boot-bin/releases/download/2.7.2/boot.sh -o ~/bin/boot
+  - chmod +x ~/bin/boot
+env:
+  matrix:
+    # Runs tests twice, using Clj 1.7 and 1.8
+    - BOOT_CLOJURE_VERSION=1.9.0
+    - BOOT_CLOJURE_VERSION=1.8.0
+jdk:
+  - oraclejdk8
+cache:
+  directories:
+  - $HOME/.m2
+  - $HOME/.boot/cache/bin
+  - $HOME/.boot/cache/lib
+  - $HOME/bin
+before_install:
+ - sudo apt-get --yes install wget nodejs npm
+before_script:
+  - "echo 'Getting ipfs-update'"
+  - wget https://dist.ipfs.io/ipfs-update/v1.5.2/ipfs-update_v1.5.2_linux-amd64.tar.gz -O ipfs-update.tar.gz
+  - "echo 'Extracting'"
+  - tar -xzf ipfs-update.tar.gz
+  - "echo 'Installing latest IPFS'"
+  - ipfs-update/ipfs-update install latest
+  - "echo 'Init IPFS'"
+  - ipfs init 
+  - "echo 'NPM-deps install'"
+  - npm install
+  - "echo 'Running IPFS daemon'"
+  - ipfs daemon > /dev/null &
