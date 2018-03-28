@@ -8,7 +8,7 @@
                                                        fatal
                                                        report]]
             [cljs-ipfs-api.core :refer-macros [defsignatures]]
-            [cljs-ipfs-api.utils :refer [wrap-callback js-apply js->cljkk cljkk->js]]))
+            [cljs-ipfs-api.utils :refer [wrap-callback api-call js->cljkk cljkk->js]]))
 
 (defsignatures
   [[id [[callback]]]

@@ -86,8 +86,7 @@
 
 (defn api-call [inst api-call args]
   (http-call (str (:host inst)
-                  (:endpoint inst)
-                  (:path api-call))
+                  (:endpoint inst) "/" api-call)
              (merge inst
                     {:args (dissoc args :callback :options)
                      :opts (:options args)
