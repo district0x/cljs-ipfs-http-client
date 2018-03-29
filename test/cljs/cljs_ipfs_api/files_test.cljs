@@ -12,7 +12,7 @@
             [cljs-ipfs-api.core :as core]
             [cljs-ipfs-api.files :as files]))
 
-(deftest add-test []
+#_(deftest add-test []
   (async done
          (core/init-ipfs)
          (let [fs (js/require "fs")

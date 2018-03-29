@@ -17,7 +17,7 @@
                  ;;CLJS
                  [org.clojure/clojurescript "1.9.946"]
                  [cljs-node-io "0.5.0"]
-                 [cljs-http "0.1.44"]
+                 [io.nervous/kvlt "0.1.4"]
 
                  ;;DEV
                  [doo "0.1.8" :scope "test"]

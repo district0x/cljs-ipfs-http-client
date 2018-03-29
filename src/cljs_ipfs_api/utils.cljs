@@ -1,9 +1,20 @@
 (ns cljs-ipfs-api.utils
-  (:require [camel-snake-kebab.core :as cs :include-macros true]
-            [camel-snake-kebab.extras :refer [transform-keys]]
-            [cljs.core.async :refer [<! >! chan]]
-            [cljs-http.client :as http]
-            [clojure.string :as string])
+  (:require
+   [taoensso.timbre :as timbre :refer-macros [log
+                                              trace
+                                              debug
+                                              info
+                                              warn
+                                              error
+                                              fatal
+                                              report]]
+   [camel-snake-kebab.core :as cs :include-macros true]
+   [camel-snake-kebab.extras :refer [transform-keys]]
+   [cljs.core.async :refer [<! >! chan]]
+   [kvlt.core :as k.core]
+   [kvlt.chan :as k.chan]
+   [promesa.core :as p]
+   [clojure.string :as string])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defn safe-case [case-f]
@@ -81,13 +92,24 @@
                        f-n)))]
     callback))
 
-(defn http-call [url params]
-  (http/post url {:query-params params}))
+(defn http-call [url args params]
+  (if-let [cb (:callback params)]
+    (p/then
+     (k.core/request! {:url url
+                       :method :post
+                       :query {:args args}})
+     (fn [{:keys [status] :as reply}]
+       (info ["REPLY" reply])
+       (if (= status 200)
+         (cb nil reply)
+         (cb reply nil))))
+    (k.core/request! {:url url})))
 
-(defn api-call [inst api-call args]
+(defn api-call [inst ac args params]
+  (info [:APICALL ac args])
   (http-call (str (:host inst)
-                  (:endpoint inst) "/" api-call)
+                  (:endpoint inst) "/" ac)
+             args
              (merge inst
-                    {:args (dissoc args :callback :options)
-                     :opts (:options args)
-                     :callback (:callback args)})))
+                    {:opts (:options params)
+                     :callback (:callback params)})))

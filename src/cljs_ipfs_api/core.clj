@@ -30,13 +30,17 @@
                  f-name)
         nil-patched-param-defs (nil-patched-defns f-name f-params)
         call-res (if (> (count api-call) 1)
-                   `(string/join [~@(concat (butlast api-call) [f-name])] "/")
+                   `(string/join "/" [~@(concat (butlast api-call) [f-name])])
                    f-name)
-        call `(let [~'args (remove nil? [~@(to-no-ns-sym (flatten f-params))])]
-                (~'api-call ~'ipfs-inst ~call-res ~(apply merge
-                                                         (map (fn [arg]
-                                                                {(keyword arg) arg})
-                                                              (to-no-ns-sym (flatten f-params))))))
+        call `(let [~'args (remove
+                            #(or (nil? %)
+                                 ;; (= "options")
+                                 ;; (= "callback")
+                                 ) [~@(to-no-ns-sym (flatten f-params))])]
+                (~'api-call ~'ipfs-inst ~call-res ~'args ~(apply merge
+                                                                 (map (fn [arg]
+                                                                        {(keyword arg) arg})
+                                                                      (to-no-ns-sym (flatten f-params))))))
         ]
     `(defn ~(symbol (name f-name))
        ~@nil-patched-param-defs
@@ -68,18 +72,11 @@
   (macroexpand '(defsignatures [[object.patch.addLink [multihash DAGLink [options] [callback]]]]))
   (macroexpand '(defsignatures [[files.add [data [options] [callback]]]]))
    
-  (do
-    (clojure.core/defn add
-      ([data]
-       (add data nil))
-      ([data callback]
-       (add data nil callback))
-      ([data options callback]
-       (add (clojure.core/deref cljs-ipfs-api.core/*ipfs-instance*) data options callback))
-      ([ipfs-inst data options callback]
-       (clojure.core/let [callback (wrap-callback callback)]
-         (clojure.core/let [args (clojure.core/remove clojure.core/nil? [data options callback])]
-           (api-call ipfs-inst
-                     (clojure.string/join ("files" "add") "/")
-                     {:data data, :options options, :callback callback}))))))
-  )
+  (do (clojure.core/defn add ([data] (add data nil)) ([data callback] (add data nil callback)) ([data options callback] (add (clojure.core/deref cljs-ipfs-api.core/*ipfs-instance*) data options callback))
+        ([ipfs-inst data options callback]
+         (clojure.core/let [callback (wrap-callback callback)]
+           (clojure.core/let [args (clojure.core/remove clojure.core/nil? [data options callback])]
+             (api-call ipfs-inst
+                       (clojure.string/join "/" ["files" "add"])
+                       args
+                       {:data data, :options options, :callback callback})))))) )
