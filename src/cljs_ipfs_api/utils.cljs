@@ -93,15 +93,22 @@
     callback))
 
 (defn http-call [url args params]
+  ;; (info [:ARGS args])
+  (info [:ARGS-type (instance? js/Buffer (first args))])
   (if-let [cb (:callback params)]
     (p/then
-     (k.core/request! {:url url
-                       :method :post
-                       :query {:args args}})
+     (k.core/request! (merge {:url url
+                              :method :post
+                              :format :edn
+                              :query {:arg (clojure.string/join " " (remove #(instance? js/Buffer %) args))}}
+                             (when-let [b (first (filter #(instance? js/Buffer %) args))]
+                               {;;:content-type "multipart/form-data"
+                                :form-data {:data b}})))
      (fn [{:keys [status] :as reply}]
        (info ["REPLY" reply])
        (if (= status 200)
-         (cb nil reply)
+         (cb nil
+             (:body reply))
          (cb reply nil))))
     (k.core/request! {:url url})))
 

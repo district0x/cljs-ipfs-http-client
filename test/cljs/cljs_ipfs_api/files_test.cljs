@@ -12,15 +12,17 @@
             [cljs-ipfs-api.core :as core]
             [cljs-ipfs-api.files :as files]))
 
-#_(deftest add-test []
+(deftest add-test []
   (async done
          (core/init-ipfs)
-         (let [fs (js/require "fs")
-               file (.createReadStream fs "resources/test/testfile.jpg")]
-           (files/add file (fn [err files]
-                             (is (= err nil))
-                             (info ["DONE" err files])
-                             (done))))))
+         (let [fs (js/require "fs")]
+           (.readFile fs "resources/test/ipfs-logo.svg"
+                      (fn [err data]
+                        (if-not err
+                          (files/add data (fn [err files]
+                                            (is (= err nil))
+                                            (info ["DONE" err files])
+                                            (done)))))))))
 (deftest ls-test []
   (async done
          (core/init-ipfs)

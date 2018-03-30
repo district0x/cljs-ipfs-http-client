@@ -2,6 +2,9 @@
   "dependencies": {
     "websocket": "^1.0.25",
     "eventsource": "^1.0.5",
-    "request": "^2.85.0"
+    "request": "^2.85.0",
+    "filereader": "^0.10.3",
+    "file-api": "latest",
+    "mime": "latest"
   }
 }
