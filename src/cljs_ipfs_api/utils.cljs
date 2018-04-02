@@ -11,11 +11,13 @@
    [camel-snake-kebab.core :as cs :include-macros true]
    [camel-snake-kebab.extras :refer [transform-keys]]
    [cljs.core.async :refer [<! >! chan]]
-   [kvlt.core :as k.core]
-   [kvlt.chan :as k.chan]
-   [promesa.core :as p]
+   [cljs-http.client :as http]
    [clojure.string :as string])
   (:require-macros [cljs.core.async.macros :refer [go]]))
+
+(when (= cljs.core/*target* "nodejs")
+  (set! js/FormData (js/require "form-data"))
+  (set! js/XMLHttpRequest (js/require "xhr2")))
 
 (defn safe-case [case-f]
   (fn [x]
@@ -96,21 +98,16 @@
   ;; (info [:ARGS args])
   (info [:ARGS-type (instance? js/Buffer (first args))])
   (if-let [cb (:callback params)]
-    (p/then
-     (k.core/request! (merge {:url url
-                              :method :post
-                              :format :edn
-                              :query {:arg (clojure.string/join " " (remove #(instance? js/Buffer %) args))}}
-                             (when-let [b (first (filter #(instance? js/Buffer %) args))]
-                               {;;:content-type "multipart/form-data"
-                                :form-data {:data b}})))
-     (fn [{:keys [status] :as reply}]
-       (info ["REPLY" reply])
-       (if (= status 200)
-         (cb nil
-             (:body reply))
-         (cb reply nil))))
-    (k.core/request! {:url url})))
+    (go (let [reply
+              (<! (http/post url (merge
+                                  {:query-params {:arg (clojure.string/join " " (remove #(instance? js/Buffer %) args))}}
+                                  (when-let [b (first (filter #(instance? js/Buffer %) args))]
+                                    {:multipart-params
+                                     [["file" b]]}))))]
+          (if (= (:status reply) 200)
+            (cb nil
+                (:body reply))
+            (cb reply nil))))))
 
 (defn api-call [inst ac args params]
   (info [:APICALL ac args])
