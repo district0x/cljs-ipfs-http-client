@@ -11,7 +11,7 @@
             [cljs-ipfs-api.utils :refer [wrap-callback api-call js->cljkk cljkk->js]]))
 
 (defsignatures
-  [[files.add [data [options] [callback]]]
+  [[add [data [options] [callback]]]
    [files.addReadableStream [data [options] [callback]]]
    [files.addPullStream [[options]]]
    [files.cat [ipfs-path [options] [callback]] fcat]

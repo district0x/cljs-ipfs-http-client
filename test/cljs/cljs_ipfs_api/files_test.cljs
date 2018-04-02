@@ -17,14 +17,22 @@
          (core/init-ipfs)
          (let [fs (js/require "fs")
                dw (js/require "buffer-dataview")]
+           #_(files/add
+            (.createReadStream fs "resources/test/ipfs-logo.svg")
+            (fn [err files]
+              (is (= err nil))
+              (info ["DONE" err files])
+              (done)))
            (.readFile fs "resources/test/ipfs-logo.svg"
                       (fn [err data]
                         (if-not err
-                          (files/add (new dw data) (fn [err files]
-                                            (is (= err nil))
-                                            (info ["DONE" err files])
-                                            (done)))))))))
-#_(deftest ls-test []
+                          (files/add  ;;data
+                           (.-buffer (js/Uint8Array. data))
+                           (fn [err files]
+                             (is (= err nil))
+                             (info ["DONE" err files])
+                             (done)))))))))
+(deftest ls-test []
   (async done
          (core/init-ipfs)
          (files/fls "/ipfs/QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/"

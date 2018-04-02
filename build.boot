@@ -116,6 +116,13 @@
      (test-cljs :js-env :node;;:phantom
                 )))
 
+(deftask auto-test-chrome []
+  (comp (testing)
+     (watch)
+     (cljs-env)
+     (test-cljs :js-env :chrome-headless;;:phantom
+                )))
+
 (task-options!
  ;; sift {:include #{#"\.jar$"}}
  ;; push {:repo           "deploy"
