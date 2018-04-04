@@ -16,9 +16,9 @@
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (when (= cljs.core/*target* "nodejs")
-  (set! js/FormData (js/require "form-data"))
   (set! js/XMLHttpRequest (js/require "xhr2"))
-  (set! (.-FormData js/XMLHttpRequest) (js/require "xhr2")))
+  (set! js/FormData (.-FormData js/XMLHttpRequest))
+  )
 
 (defn safe-case [case-f]
   (fn [x]
@@ -99,15 +99,10 @@
   (not (= js/String (type x))))
 
 (defn http-call [url args params]
-  ;; (info [:ARGS args])
-  (info [:ARGS-type
-         (first args)
-         (type (first args))
-         (is-blob? (first args))])
   (if-let [cb (:callback params)]
     (go (let [reply
               (<! (http/post url (merge
-                                  {:query-params {:arg (clojure.string/join " " (remove is-blob? args))}}
+                                  {:query-params {"arg" (clojure.string/join " " (remove is-blob? args))}}
                                   (when-let [b (first (filter is-blob? args))]
                                     {:multipart-params
                                      [["file" [b b]]]}))))]

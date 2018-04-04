@@ -26,8 +26,9 @@
            (.readFile fs "resources/test/ipfs-logo.svg"
                       (fn [err data]
                         (if-not err
-                          (files/add  ;;data
-                           (.-buffer (js/Uint8Array. data))
+                          (files/add  ;;
+                           data
+                           ;; (.-buffer (js/Uint8Array. data))
                            (fn [err files]
                              (is (= err nil))
                              (info ["DONE" err files])

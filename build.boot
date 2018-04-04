@@ -46,7 +46,7 @@
  '[adzerk.boot-cljs-repl :refer [cljs-repl start-repl]]
  '[adzerk.boot-reload    :refer [reload]]
  ;; '[pandeiro.boot-http    :refer [serve]]
- '[crisptrutski.boot-cljs-test :refer [test-cljs]]
+ '[crisptrutski.boot-cljs-test :refer [test-cljs prep-cljs-tests]]
  ;; '[org.martinklepsch.boot-garden :refer [garden]]
  '[powerlaces.boot-cljs-devtools :refer [cljs-devtools dirac]]
  '[boot.git :refer [last-commit]]
@@ -96,6 +96,8 @@
 
 (deftask testing []
   (set-env! :source-paths #(conj % "test/cljs"))
+  ;; (task-options! test-cljs {:doo-opts
+  ;;                           {:paths {:node "node  --inspect --debug-brk"}}})
   identity)
 
 ;;; This prevents a name collision WARNING between the test task and

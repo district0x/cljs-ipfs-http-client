@@ -5,7 +5,7 @@
         "request": "^2.85.0",
         "filereader": "^0.10.3",
         "file-api": "latest",
-        "xhr2": "latest",
+        "xhr2": "git://github.com/district0x/node-xhr2",
         "buffer-dataview": "latest",
         "karma": "latest",
         "karma-cljs-test": "latest",
