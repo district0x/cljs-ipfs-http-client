@@ -23,8 +23,11 @@
               (is (= err nil))
               (info ["DONE" err files])
               (done)))
-           (.readFile fs "resources/test/ipfs-logo.svg"
+           (.readFile fs
+                      ;; "resources/test/testfile.jpg"
+                      "resources/test/ipfs-logo.svg"
                       (fn [err data]
+                        (info [:SIZW (.-length data)])
                         (if-not err
                           (files/add  ;;
                            data

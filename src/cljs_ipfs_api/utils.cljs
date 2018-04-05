@@ -15,8 +15,11 @@
    [clojure.string :as string])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
+
 (when (= cljs.core/*target* "nodejs")
   (set! js/XMLHttpRequest (js/require "xhr2"))
+  ;; (set! (.-parse js/JSON) (fn [s] (info ["PARSE" s])
+  ;;                           (.parse js/JSON s)))
   (set! js/FormData (.-FormData js/XMLHttpRequest))
   )
 
@@ -105,14 +108,15 @@
                                   {:query-params {"arg" (clojure.string/join " " (remove is-blob? args))}}
                                   (when-let [b (first (filter is-blob? args))]
                                     {:multipart-params
-                                     [["file" [b b]]]}))))]
+                                     [["file" [b (clj->js
+                                                  {"knownLength" (.-length b)})]]]}))))]
           (if (= (:status reply) 200)
             (cb nil
                 (:body reply))
             (cb reply nil))))))
 
 (defn api-call [inst ac args params]
-  (info [:APICALL ac args])
+  ;; (info [:APICALL ac args])
   (http-call (str (:host inst)
                   (:endpoint inst) "/" ac)
              args
