@@ -108,8 +108,9 @@
                                   {:query-params {"arg" (clojure.string/join " " (remove is-blob? args))}}
                                   (when-let [b (first (filter is-blob? args))]
                                     {:multipart-params
-                                     [["file" [b (clj->js
-                                                  {"knownLength" (.-length b)})]]]}))))]
+                                     [["file" b
+                                       ;;[b (clj->js {"knownLength" (.-length b)})]
+                                       ]]}))))]
           (if (= (:status reply) 200)
             (cb nil
                 (:body reply))
