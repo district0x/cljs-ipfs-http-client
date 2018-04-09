@@ -105,7 +105,8 @@
   (if-let [cb (:callback params)]
     (go (let [reply
               (<! (http/post url (merge
-                                  {:query-params {"arg" (clojure.string/join " " (remove is-blob? args))}}
+                                  {:query-params {"arg" (clojure.string/join " " (remove is-blob? args))}
+                                   :with-credentials? false}
                                   (when-let [b (first (filter is-blob? args))]
                                     {:multipart-params
                                      [["file" b
