@@ -7,7 +7,7 @@ ClojureScript direct-call implementation of [JavaScript HTTP IPFS client library
 ## Installation
 ```clojure
 ;; Add to dependencies
-[district0x/cljs-ipfs-native "0.0.13-SNAPSHOT"]
+[district0x/cljs-ipfs-native "0.0.2-SNAPSHOT"]
 ```
 ```clojure
 (ns my.app

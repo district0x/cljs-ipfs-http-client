@@ -17,12 +17,6 @@
          (core/init-ipfs)
          (let [fs (js/require "fs")
                dw (js/require "buffer-dataview")]
-           #_(files/add
-            (.createReadStream fs "resources/test/ipfs-logo.svg")
-            (fn [err files]
-              (is (= err nil))
-              (info ["DONE" err files])
-              (done)))
            (.readFile fs
                       ;; "resources/test/testfile.jpg"
                       "resources/test/ipfs-logo.svg"
