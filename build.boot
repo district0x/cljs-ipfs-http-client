@@ -36,7 +36,7 @@
                  [binaryage/devtools "0.9.4"]
                  ])
 
-  (def +version+ "0.0.2-SNAPSHOT")
+  (def +version+ "0.0.3-SNAPSHOT")
 
 (require
  '[samestep.boot-refresh :refer [refresh]]
