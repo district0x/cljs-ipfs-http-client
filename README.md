@@ -21,11 +21,31 @@ So basically, stick with the js-ipfs-api [docs](https://github.com/ipfs/js-ipfs-
 
 ### Example call
 ```clojure
-(init-ipfs-node "/ip4/127.0.0.1/tcp/5001")
+(init-ipfs)
+;;(init-ipfs {:host "http://127.0.0.1:5001" :endpoint "/api/v0"})
+
 ;;fls to avoid clashes with ls from files.ls
 (ifiles/fls "/ipfs/QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/" (fn [err files]
                                                                       (info [err "ERROR"])
                                                                       (info [files "FILES"])))
+;;Files upload on NODEJS see files_test                                                                  
+;;Files upload -- reagent
+(let [f (atom nil)]
+    (fn []
+      [:form
+       {:on-submit
+        (fn [e]
+          (.preventDefault e)
+          (ifiles/add @f (fn [err files]
+                                      (info ["DONE" err files]))))}
+       [:input {:type "file"
+                :on-change #(let [v (-> % .-target .-files (aget 0))]
+                              (reset! f v))}]
+       [:input
+        {:type "submit"
+         :value "Import"}]]))
+
+                                                                      
 ```
 
 #### cljs.core.async integration
