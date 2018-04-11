@@ -12,8 +12,8 @@ ClojureScript direct-call implementation of [JavaScript HTTP IPFS client library
 ```clojure
 (ns my.app
   (:require 
-  [cljs-ipfs-native.core :as icore :refer [init-ipfs]]
-  [cljs-ipfs-native.files :as ifiles]))
+  [cljs-ipfs-api.core :as icore :refer [init-ipfs]]
+  [cljs-ipfs-api.files :as ifiles]))
 ```
 
 ## Usage
