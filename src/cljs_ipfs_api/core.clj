@@ -72,5 +72,10 @@
   (macroexpand '(defsignatures [[object.addLink [multihash DAGLink [options] [callback]]]]))
   (macroexpand '(defsignatures [[object.patch.addLink [multihash DAGLink [options] [callback]]]]))
   (macroexpand '(defsignatures [[files.add [data [options] [callback]]]]))
-  (do (clojure.core/defn add ([data] (add data nil)) ([data callback] (add data nil callback)) ([data options callback] (add (clojure.core/deref cljs-ipfs-api.core/*ipfs-instance*) data options callback)) ([ipfs-inst data options callback] (clojure.core/let [callback (wrap-callback callback)] (clojure.core/let [args (clojure.core/remove clojure.core/nil? [data])] (api-call ipfs-inst "clojure.lang.LazySeq@b40a10cb" args {:data data, :options options, :callback callback})))))) 
+  (macroexpand 
+   '(defsignatures
+     [[bitswap.wantlist []]
+      [bitswap.stat []]
+      [bitswap.unwant []]]))
+
    )

@@ -34,6 +34,7 @@
                  [binaryage/dirac "1.1.3" :scope "test"]
                  [powerlaces/boot-cljs-devtools "0.2.0" :scope "test"]
                  [binaryage/devtools "0.9.4"]
+                 [boot-codox "0.10.3" :scope "test"]
                  ])
 
   (def +version+ "0.0.3-SNAPSHOT")
@@ -47,9 +48,16 @@
  '[powerlaces.boot-cljs-devtools :refer [cljs-devtools dirac]]
  '[boot.git :refer [last-commit]]
  '[adzerk.bootlaces :refer :all]
+ '[codox.boot :refer [codox]]
  )
 
 (bootlaces! +version+)
+
+(task-options!
+ codox {:version +version+
+        :description "IPFS library for node and web"
+        :name "IPFS API"
+        :language :clojurescript})
 
 (deftask cljs-env []
   (task-options! cljs {:compiler-options {:target :nodejs
