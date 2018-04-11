@@ -17,7 +17,7 @@ ClojureScript direct-call implementation of [JavaScript HTTP IPFS client library
 ```
 
 ## Docs
-https://district0x.github.io/cljs-ipfs-native/docs/
+https://district0x.github.io/cljs-ipfs-native/
 
 ## Usage
 So basically, stick with the js-ipfs-api [docs](https://github.com/ipfs/js-ipfs-api#api), all methods there have their kebab-cased version in this library. Also, return values and responses in callbacks are automatically kebab-cased and keywordized. You can provide IPFS instance as an additional first argument to each function, in case you'd need more than one connection:
