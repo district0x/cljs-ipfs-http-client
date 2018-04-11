@@ -10,17 +10,18 @@
          (let [fs (js/require "fs")
                dw (js/require "buffer-dataview")]
            (.readFile fs
-                      "resources/test/testfile.jpg"
-                      ;;"resources/test/ipfs-logo.svg"
+                      ;; "resources/test/testfile.jpg"
+                      "resources/test/ipfs-logo.svg"
                       (fn [err data]
                         (if-not err
                           (files/add  ;;
                            data
                            (fn [err files]
                              (is (= err nil))
-                             (is (= files {:Name "QmSyCoZk71seLtRFZHL9iLDc5L6uT81HPKr8NcnhZccFVz",
-                                           :Hash "QmSyCoZk71seLtRFZHL9iLDc5L6uT81HPKr8NcnhZccFVz",
-                                           :Size "136568"}))
+                             (is (= files
+                                    {:Name "QmX6d3PikDgpzrAB8xzHhygnELPCDRA4UuuJK1VeCefa48",
+                                     :Hash "QmX6d3PikDgpzrAB8xzHhygnELPCDRA4UuuJK1VeCefa48",
+                                     :Size "1946"}))
                              (done)))))))))
 (deftest ls-test []
   (async done
