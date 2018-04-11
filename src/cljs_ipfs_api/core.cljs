@@ -1,12 +1,4 @@
-(ns cljs-ipfs-api.core
-  (:require [taoensso.timbre :as timbre :refer-macros [log
-                                                       trace
-                                                       debug
-                                                       info
-                                                       warn
-                                                       error
-                                                       fatal
-                                                       report]]))
+(ns cljs-ipfs-api.core)
 
 (def *ipfs-instance* (atom nil))
 
@@ -19,6 +11,3 @@
             params)]
      (reset! *ipfs-instance* i)
      i)))
-
-(defn init []
-  (info "INIT"))

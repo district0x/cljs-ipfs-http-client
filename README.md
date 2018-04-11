@@ -1,6 +1,6 @@
 # Cljs IPFS-API-NATIVE (DIRECT)
 
-[![Build Status](https://travis-ci.org/district0x/cljs-ipfs-native.svg?branch=master)](https://travis-ci.org/district0x/cljs-ipfs-api)
+[![Build Status](https://travis-ci.org/district0x/cljs-ipfs-native.svg?branch=master)](https://travis-ci.org/district0x/cljs-ipfs-native)
 
 ClojureScript direct-call implementation of [JavaScript HTTP IPFS client library](https://github.com/ipfs/js-ipfs-api) 
 
@@ -12,7 +12,7 @@ ClojureScript direct-call implementation of [JavaScript HTTP IPFS client library
 ```clojure
 (ns my.app
   (:require 
-  [cljs-ipfs-native.core :as icore :refer [init-ipfs-node]] ;;Or init-ipfs-web for web
+  [cljs-ipfs-native.core :as icore :refer [init-ipfs]]
   [cljs-ipfs-native.files :as ifiles]))
 ```
 

@@ -2,15 +2,7 @@
   (:require
    [cljs.test :refer [deftest testing is async]]
    [cljs.test :as t]
-            [taoensso.timbre :as timbre :refer-macros [log
-                                                       trace
-                                                       debug
-                                                       info
-                                                       warn
-                                                       error
-                                                       fatal
-                                                       report]]
-            [cljs-ipfs-api.core :as core]))
+   [cljs-ipfs-api.core :as core]))
 
 (deftest defnils-test []
   ;; (is (= (core/nil-patched-defns 'test ['data ['options] ['callback] ['quack] 'mordata]) nil))

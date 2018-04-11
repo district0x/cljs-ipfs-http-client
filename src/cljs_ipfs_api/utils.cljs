@@ -1,13 +1,5 @@
 (ns cljs-ipfs-api.utils
   (:require
-   [taoensso.timbre :as timbre :refer-macros [log
-                                              trace
-                                              debug
-                                              info
-                                              warn
-                                              error
-                                              fatal
-                                              report]]
    [camel-snake-kebab.core :as cs :include-macros true]
    [camel-snake-kebab.extras :refer [transform-keys]]
    [cljs.core.async :refer [<! >! chan]]
@@ -15,13 +7,10 @@
    [clojure.string :as string])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
-
+;;Shims for NODEJS
 (when (= cljs.core/*target* "nodejs")
   (set! js/XMLHttpRequest (js/require "xhr2"))
-  ;; (set! (.-parse js/JSON) (fn [s] (info ["PARSE" s])
-  ;;                           (.parse js/JSON s)))
-  (set! js/FormData (.-FormData js/XMLHttpRequest))
-  )
+  (set! js/FormData (.-FormData js/XMLHttpRequest)))
 
 (defn safe-case [case-f]
   (fn [x]
@@ -67,26 +56,6 @@
 (defn js-prototype-apply [js-obj method-name args]
   (js-apply (aget js-obj "prototype") method-name args))
 
-#_(defn prop-or-clb-fn
-  "Constructor to create an fn to get properties or to get properties and apply a
-  callback fn."
-  [& ks]
-  (fn [web3 & args]
-    (if (fn? (first args))
-      (js-apply (apply aget web3 (butlast ks))
-                (str "get" (cs/->PascalCase (last ks)))
-                args)
-      (js->cljkk (apply aget web3 ks)))))
-
-#_(defn create-async-fn [f]
-  (fn [& args]
-    (let [[ch args] (if (instance? cljs.core.async.impl.channels/ManyToManyChannel (first args))
-                      [(first args) (rest args)]
-                      [(chan) args])]
-      (apply f (concat args [(fn [err res]
-                               (go (>! ch [err res])))]))
-      ch)))
-
 (defn wrap-callback [f-n]
   (let [callback (fn callback [err res]
                    (if (instance? cljs.core.async.impl.channels/ManyToManyChannel f-n)
@@ -118,7 +87,6 @@
             (cb reply nil))))))
 
 (defn api-call [inst ac args params]
-  ;; (info [:APICALL ac args])
   (http-call (str (:host inst)
                   (:endpoint inst) "/" ac)
              args

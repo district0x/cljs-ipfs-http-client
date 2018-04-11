@@ -1,14 +1,6 @@
 (ns cljs-ipfs-api.files-test
   (:require-macros [cljs.test :refer [deftest testing is async]])
   (:require [cljs.test :as t]
-            [taoensso.timbre :as timbre :refer-macros [log
-                                                       trace
-                                                       debug
-                                                       info
-                                                       warn
-                                                       error
-                                                       fatal
-                                                       report]]
             [cljs-ipfs-api.core :as core]
             [cljs-ipfs-api.files :as files]))
 
@@ -18,17 +10,17 @@
          (let [fs (js/require "fs")
                dw (js/require "buffer-dataview")]
            (.readFile fs
-                      ;; "resources/test/testfile.jpg"
-                      "resources/test/ipfs-logo.svg"
+                      "resources/test/testfile.jpg"
+                      ;;"resources/test/ipfs-logo.svg"
                       (fn [err data]
-                        (info [:SIZW (.-length data)])
                         (if-not err
                           (files/add  ;;
                            data
-                           ;; (.-buffer (js/Uint8Array. data))
                            (fn [err files]
                              (is (= err nil))
-                             (info ["DONE" err files])
+                             (is (= files {:Name "QmSyCoZk71seLtRFZHL9iLDc5L6uT81HPKr8NcnhZccFVz",
+                                           :Hash "QmSyCoZk71seLtRFZHL9iLDc5L6uT81HPKr8NcnhZccFVz",
+                                           :Size "136568"}))
                              (done)))))))))
 (deftest ls-test []
   (async done
@@ -36,5 +28,30 @@
          (files/fls "/ipfs/QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/"
                    (fn [err files]
                      (is (= err nil))
-                     (info ["DONE" err files])
+                     (is (= files {:Objects
+                                   [{:Hash "/ipfs/QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/",
+                                     :Links [{:Name "about",
+                                              :Hash "QmZTR5bcpQD7cFgTorqxZDYaew1Wqgfbd2ud9QqGPAkK2V",
+                                              :Size 1688,
+                                              :Type 2}
+                                             {:Name "contact",
+                                              :Hash "QmYCvbfNbCwFR45HiNP45rwJgvatpiW38D961L5qAhUM5Y",
+                                              :Size 200,
+                                              :Type 2}
+                                             {:Name "help",
+                                              :Hash "QmY5heUM5qgRubMDD1og9fhCPA6QdkMp3QCwd4s7gJsyE7",
+                                              :Size 322,
+                                              :Type 2}
+                                             {:Name "quick-start",
+                                              :Hash "QmdncfsVm2h5Kqq9hPmU7oAVX2zTSVP3L869tgTbPYnsha",
+                                              :Size 1728,
+                                              :Type 2}
+                                             {:Name "readme",
+                                              :Hash "QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB",
+                                              :Size 1102,
+                                              :Type 2}
+                                             {:Name "security-notes",
+                                              :Hash "QmTumTjvcYCAvRRwQ8sDRxh8ezmrcr88YFU7iYNroGGTBZ",
+                                              :Size 1027,
+                                              :Type 2}]}]}))
                      (done)))))
