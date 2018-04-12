@@ -4,13 +4,16 @@
    [camel-snake-kebab.extras :refer [transform-keys]]
    [cljs.core.async :refer [<! >! chan]]
    [cljs-http.client :as http]
+   #_[taoensso.timbre :as timbre :refer-macros [log
+                                              trace
+                                              debug
+                                              info
+                                              warn
+                                              error
+                                              fatal
+                                              report]]
    [clojure.string :as string])
   (:require-macros [cljs.core.async.macros :refer [go]]))
-
-;;Shims for NODEJS
-(when (= cljs.core/*target* "nodejs")
-  (set! js/XMLHttpRequest (js/require "xhr2"))
-  (set! js/FormData (.-FormData js/XMLHttpRequest)))
 
 (defn safe-case [case-f]
   (fn [x]
@@ -70,21 +73,45 @@
 (defn is-blob? [x]
   (not (= js/String (type x))))
 
-(defn http-call [url args params]
+(defn web-http-call [url args params]
   (if-let [cb (:callback params)]
     (go (let [reply
               (<! (http/post url (merge
                                   {:query-params {"arg" (clojure.string/join " " (remove is-blob? args))}
                                    :with-credentials? false}
                                   (when-let [b (first (filter is-blob? args))]
+                                    ;; (info [:FILELEN (.-length b)])
                                     {:multipart-params
-                                     [["file" b
-                                       ;;[b (clj->js {"knownLength" (.-length b)})]
-                                       ]]}))))]
+                                     [["file"
+                                       b]]}))))]
           (if (= (:status reply) 200)
             (cb nil
                 (:body reply))
             (cb reply nil))))))
+
+(defn node-http-call [url args params]
+  (if-let [cb (:callback params)]
+    (let [rm (js/require "request")
+          on-done (fn [err resp body]
+                    (let [err (js->cljkk err)
+                          resp (js->cljkk resp)
+                          body (js->cljkk body)]
+                      ;; (info [:DONE err resp body])
+                      (if (= (.-statusCode resp) 200)
+                        (cb nil
+                            (.parse js/JSON body))
+                        (cb (.-statusMessage resp) nil))))
+          form (when-let [b (first (filter is-blob? args))]
+                 {:formData
+                  {:file b}})
+          req (.post rm (clj->js (merge {:url url
+                                         :qs {:arg (clojure.string/join " " (remove is-blob? args))}}
+                                        form)) on-done)])))
+
+(def http-call
+  (if (= cljs.core/*target* "nodejs")
+    node-http-call
+    web-http-call))
 
 (defn api-call [inst ac args params]
   (http-call (str (:host inst)

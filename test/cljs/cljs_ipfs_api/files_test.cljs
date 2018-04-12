@@ -10,8 +10,8 @@
          (let [fs (js/require "fs")
                dw (js/require "buffer-dataview")]
            (.readFile fs
-                      ;; "resources/test/testfile.jpg"
-                      "resources/test/ipfs-logo.svg"
+                      "resources/test/testfile.jpg"
+                      ;;"resources/test/ipfs-logo.svg"
                       (fn [err data]
                         (if-not err
                           (files/add  ;;
@@ -19,7 +19,10 @@
                            (fn [err files]
                              (is (= err nil))
                              (is (= files
-                                    {:Name "QmX6d3PikDgpzrAB8xzHhygnELPCDRA4UuuJK1VeCefa48",
+                                    {:Name "QmP6LozGREM9RWNv7EvER8shCQi1KzwYVKZFnHPNsKGbRd",
+                                     :Hash "QmP6LozGREM9RWNv7EvER8shCQi1KzwYVKZFnHPNsKGbRd",
+                                     :Size "141584"}
+                                    #_{:Name "QmX6d3PikDgpzrAB8xzHhygnELPCDRA4UuuJK1VeCefa48",
                                      :Hash "QmX6d3PikDgpzrAB8xzHhygnELPCDRA4UuuJK1VeCefa48",
                                      :Size "1946"}))
                              (done)))))))))

@@ -37,7 +37,7 @@
                  [boot-codox "0.10.3" :scope "test"]
                  ])
 
-  (def +version+ "0.0.3-SNAPSHOT")
+  (def +version+ "0.0.4-SNAPSHOT")
 
 (require
  '[samestep.boot-refresh :refer [refresh]]
