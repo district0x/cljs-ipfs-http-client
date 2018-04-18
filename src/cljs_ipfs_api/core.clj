@@ -32,7 +32,6 @@
         call-res (str (if (> (count api-call) 1)
                         (string/join "/" (concat (butlast api-call) [f-name]))
                         orig-f-name))
-        ;;call-res "files/ls"
         call `(let [~'args (remove nil? [~@(to-no-ns-sym
                                             (remove #(or (= % 'options)
                                                          (= % 'callback))
@@ -63,19 +62,4 @@
        ~@defs)))
 
 (comment
-
-  (defsignature '[add files.add [data [options] [callback]]])
-
-  (macroexpand '(defsignatures [[files.add [data [options] [callback]]]
-                                [files.addReadableStream [data [options] [callback]]]]))
-
-  (macroexpand '(defsignatures [[object.addLink [multihash DAGLink [options] [callback]]]]))
-  (macroexpand '(defsignatures [[object.patch.addLink [multihash DAGLink [options] [callback]]]]))
-  (macroexpand '(defsignatures [[files.add [data [options] [callback]]]]))
-  (macroexpand 
-   '(defsignatures
-     [[bitswap.wantlist []]
-      [bitswap.stat []]
-      [bitswap.unwant []]]))
-
-   )
+  (macroexpand '(defsignatures [[files.add [data [options] [callback]]]])))

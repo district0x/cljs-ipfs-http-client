@@ -37,7 +37,7 @@
                  [boot-codox "0.10.3" :scope "test"]
                  ])
 
-  (def +version+ "0.0.4-SNAPSHOT")
+  (def +version+ "1.0.0")
 
 (require
  '[samestep.boot-refresh :refer [refresh]]
@@ -60,10 +60,7 @@
         :language :clojurescript})
 
 (deftask cljs-env []
-  (task-options! cljs {:compiler-options {:target :nodejs
-                                          ;; :install-deps true
-                                          ;; :npm-deps {:ipfs-api "18.1.1"}
-                                          }})
+  (task-options! cljs {:compiler-options {:target :nodejs}})
   identity)
 
 (deftask build []
@@ -80,9 +77,7 @@
 
 
 (deftask production []
-  (task-options! cljs {:optimizations :advanced}
-                 ;; garden {:pretty-print false}
-                 )
+  (task-options! cljs {:optimizations :advanced})
   identity)
 
 (deftask development []
@@ -155,3 +150,10 @@
    (cljs :compiler-options {:target :nodejs})
    (build-jar)
    (push-snapshot)))
+
+(deftask deploy-release []
+  (comp
+   (production)
+   (cljs :compiler-options {:target :nodejs})
+   (build-jar)
+   (push-release)))
