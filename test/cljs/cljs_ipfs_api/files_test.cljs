@@ -59,3 +59,15 @@
                                               :Size 1027,
                                               :Type 2}]}]}))
                      (done)))))
+
+(deftest fget-test []
+  (async done
+         (core/init-ipfs)
+         (let [fs (js/require "fs")]
+           (files/fget "/ipfs/QmVGqQ2aBgp2BXFJBxfVacdYVekuPdPHJuc3DjaitiaZQN"
+                       {;;:pipe-to (.createWriteStream fs "/path/to/gzipped/file.gz")
+                        :req-opts {:compress true}}
+                       (fn [err content]
+                         (is (= err nil))
+                         (is (= (count content) 128))
+                         (done))))))

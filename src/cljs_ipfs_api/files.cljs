@@ -9,7 +9,7 @@
    [files.cat [ipfs-path [options] [callback]] fcat]
    [files.catReadableStream (ipfsPath [options])]
    [files.catPullStream [ipfsPath [options]]]
-   [files.get [ipfsPath [options], [callback]] fget]
+   [get [ipfsPath [options], [callback]] fget]
    [files.getReadableStream [ipfsPath [options]]]
    [files.getPullStream [ipfsPath [options]]]
    [ls [ipfsPath [callback]] fls]

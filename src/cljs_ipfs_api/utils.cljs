@@ -4,7 +4,7 @@
    [camel-snake-kebab.extras :refer [transform-keys]]
    [cljs.core.async :refer [<! >! chan]]
    [cljs-http.client :as http]
-   #_[taoensso.timbre :as timbre :refer-macros [log
+   [taoensso.timbre :as timbre :refer-macros [log
                                               trace
                                               debug
                                               info
@@ -92,21 +92,38 @@
 (defn node-http-call [url args params]
   (if-let [cb (:callback params)]
     (let [rm (js/require "request")
-          on-done (fn [err resp body]
+          fs (js/require "fs")
+          on-done (fn [err oresp obody]
                     (let [err (js->cljkk err)
-                          resp (js->cljkk resp)
-                          body (js->cljkk body)]
-                      ;; (info [:DONE err resp body])
+                          resp (js->cljkk oresp)
+                          body (js->cljkk obody)]
+                      #_(info [:URL url
+                             :ARGS args
+                             :PARAMS params
+                             :ERR err
+                             :BODY obody
+                             :RESP oresp
+                             body
+                             ])
                       (if (= (.-statusCode resp) 200)
                         (cb nil
-                            (.parse js/JSON body))
+                            (try
+                              (.parse js/JSON body)
+                              (catch js/SyntaxError e
+                                body
+                                ;; @p
+                                )))
                         (cb (.-statusMessage resp) nil))))
           form (when-let [b (first (filter is-blob? args))]
                  {:formData
                   {:file b}})
           req (.post rm (clj->js (merge {:url url
-                                         :qs {:arg (clojure.string/join " " (remove is-blob? args))}}
-                                        form)) on-done)])))
+                                         :qs (merge {:arg (clojure.string/join " " (remove is-blob? args))}
+                                                     (get-in params [:opts :req-opts]))}
+                                        form)) on-done)]
+      (when-let [out (get-in params [:opts :pipe-to])]
+        ;; (info [:OUT out])
+        (.pipe req out)))))
 
 (def http-call
   (if (= cljs.core/*target* "nodejs")
