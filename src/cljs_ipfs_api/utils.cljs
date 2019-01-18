@@ -105,15 +105,18 @@
                              :RESP oresp
                              body
                              ])
-                      (if (= (.-statusCode resp) 200)
+                      (cond
+                        err
+                        (cb err nil)
+
+                        (= (.-statusCode resp) 200)
                         (cb nil
                             (try
                               (.parse js/JSON body)
                               (catch js/SyntaxError e
-                                body
-                                ;; @p
-                                )))
-                        (cb (.-statusMessage resp) nil))))
+                                body)))
+
+                        :else (cb (.-statusMessage resp) nil))))
           form (when-let [b (first (filter is-blob? args))]
                  {:formData
                   {:file b}})
