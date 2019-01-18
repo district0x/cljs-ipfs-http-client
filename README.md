@@ -5,7 +5,7 @@
 ClojureScript direct-call implementation of [JavaScript HTTP IPFS client library](https://github.com/ipfs/js-ipfs-api) 
 
 ## Installation
-Add to dependencies:
+Add to dependencies: <br>
 [![Clojars Project](https://img.shields.io/clojars/v/district0x/cljs-ipfs-native.svg)](https://clojars.org/district0x/cljs-ipfs-native)
 
 Using:
