@@ -1,6 +1,6 @@
 (ns cljs-ipfs-api.core)
 
-(def *ipfs-instance* (atom nil))
+(def ^:dynamic *ipfs-instance* (atom nil))
 
 (defn init-ipfs
   ([] (init-ipfs {}))

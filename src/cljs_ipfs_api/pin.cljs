@@ -3,6 +3,6 @@
             [cljs-ipfs-api.utils :refer [wrap-callback api-call js->cljkk cljkk->js]]))
 
 (defsignatures
-  [[pin.add []]
-   [pin.rm []]
-   [pin.ls []]])
+  [[pin.add [hash [options] [callback]]]
+   [pin.rm [hash [options] [callback]]]
+   [pin.ls [[hash] [options] [callback]]]])
