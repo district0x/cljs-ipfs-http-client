@@ -63,11 +63,9 @@
 (deftest fget-test []
   (async done
          (core/init-ipfs)
-         (let [fs (js/require "fs")]
-           (files/fget "/ipfs/QmVGqQ2aBgp2BXFJBxfVacdYVekuPdPHJuc3DjaitiaZQN"
-                       {;;:pipe-to (.createWriteStream fs "/path/to/gzipped/file.gz")
-                        :req-opts {:compress true}}
-                       (fn [err content]
+         (files/fget "/ipfs/QmP6LozGREM9RWNv7EvER8shCQi1KzwYVKZFnHPNsKGbRd"
+                     {:req-opts {:compress true}}
+                     (fn [err content]
                          (is (= err nil))
-                         (is (= (count content) 128))
-                         (done))))))
+                         (is (= (count content) 129811))
+                         (done)))))
