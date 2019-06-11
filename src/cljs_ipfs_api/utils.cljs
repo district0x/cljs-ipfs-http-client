@@ -95,37 +95,39 @@
           fs (js/require "fs")
           on-done (fn [err oresp obody]
                     (let [err (js->cljkk err)
-                          resp (js->cljkk oresp)
-                          body (js->cljkk obody)]
-                      #_(info [:URL url
-                             :ARGS args
-                             :PARAMS params
-                             :ERR err
-                             :BODY obody
-                             :RESP oresp
-                             body
-                             ])
+                          resp (js->cljkk oresp)]
+
                       (cond
                         err
                         (cb err nil)
 
                         (= (.-statusCode resp) 200)
-                        (cb nil
-                            (try
-                              (.parse js/JSON body)
-                              (catch js/SyntaxError e
-                                body)))
+                        (if (get-in params [:opts :binary?])
+                          ;; if :binary? option is set, then obody will be a Buffer with binary data
+                          ;; so just return it as it is
+                          (cb nil obody)
+
+                          ;; response body is going to be json
+                          (cb nil
+                             (try
+                               (.parse js/JSON (js->cljkk obody))
+                               (catch js/SyntaxError e
+                                 (js->cljkk obody)))))
 
                         :else (cb (.-statusMessage resp) nil))))
           form (when-let [b (first (filter is-blob? args))]
                  {:formData
                   {:file b}})
-          req (.post rm (clj->js (merge {:url url
-                                         :qs (merge {:arg (clojure.string/join " " (remove is-blob? args))}
-                                                     (get-in params [:opts :req-opts]))}
-                                        form)) on-done)]
+          req-options (clj->js (merge {:url url
+                                       :qs (merge {:arg (clojure.string/join " " (remove is-blob? args))}
+                                                  (get-in params [:opts :req-opts]))}
+                                      ;; if we have :binary? option lets set encoding nil
+                                      ;; nodejs doc says that a post with encoding nil will return
+                                      ;; the response body in a Buffer instead of a string
+                                      (when (get-in params [:opts :binary?]) {:encoding nil})
+                                      form))
+          req (.post rm req-options on-done)]
       (when-let [out (get-in params [:opts :pipe-to])]
-        ;; (info [:OUT out])
         (.pipe req out)))))
 
 (def http-call
