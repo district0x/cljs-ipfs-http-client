@@ -3,3 +3,4 @@
 .nrepl-port
 node_modules/
 tests-output/
+package-lock.json
