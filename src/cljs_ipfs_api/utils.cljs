@@ -1,18 +1,10 @@
 (ns cljs-ipfs-api.utils
-  (:require
-   [camel-snake-kebab.core :as cs :include-macros true]
-   [camel-snake-kebab.extras :refer [transform-keys]]
-   [cljs.core.async :refer [<! >! chan]]
-   [cljs-http.client :as http]
-   [taoensso.timbre :as timbre :refer-macros [log
-                                              trace
-                                              debug
-                                              info
-                                              warn
-                                              error
-                                              fatal
-                                              report]]
-   [clojure.string :as string])
+  (:require [ajax.core :as ajax :refer [POST]]
+            [camel-snake-kebab.core :as cs :include-macros true]
+            [camel-snake-kebab.extras :refer [transform-keys]]
+            [cljs.core.async :as async :refer [<! >! chan]]
+            [clojure.string :as string]
+            [district.format :as format])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defn safe-case [case-f]
@@ -73,21 +65,15 @@
 (defn is-blob? [x]
   (not (= js/String (type x))))
 
-(defn web-http-call [url args params]
-  (if-let [cb (:callback params)]
-    (go (let [reply
-              (<! (http/post url (merge
-                                  {:query-params {"arg" (clojure.string/join " " (remove is-blob? args))}
-                                   :with-credentials? false}
-                                  (when-let [b (first (filter is-blob? args))]
-                                    ;; (info [:FILELEN (.-length b)])
-                                    {:multipart-params
-                                     [["file"
-                                       b]]}))))]
-          (if (= (:status reply) 200)
-            (cb nil
-                (:body reply))
-            (cb reply nil))))))
+(defn web-http-call [url args {:keys [:opts :callback] :as params}]
+  (POST (format/format-url url opts)
+      (merge {:handler (fn [response] (callback nil response))
+              :error-handler (fn [err] (callback err nil))
+              :response-format (ajax/raw-response-format)}
+             (when-let [b (first (filter is-blob? args))]
+               {:body (doto
+                          (js/FormData.)
+                        (.append "file" b))}))))
 
 (defn node-http-call [url args params]
   (if-let [cb (:callback params)]

@@ -1,27 +1,29 @@
-# Cljs IPFS-API-NATIVE (DIRECT)
+# cljs-ipfs-http-client
 
-[![Build Status](https://travis-ci.org/district0x/cljs-ipfs-native.svg?branch=master)](https://travis-ci.org/district0x/cljs-ipfs-native)
+ClojureScript library for calling the [IPFS HTTP API](https://docs.ipfs.io/reference/api/http/) <br>
+<br>
 
-ClojureScript direct-call implementation of [JavaScript HTTP IPFS client library](https://github.com/ipfs/js-ipfs-api) 
+[![Build Status](https://travis-ci.org/district0x/cljs-ipfs-http-client.svg?branch=master)](https://travis-ci.org/district0x/cljs-ipfs-http-client)
 
 ## Installation
+
 Add to dependencies: <br>
-[![Clojars Project](https://img.shields.io/clojars/v/district0x/cljs-ipfs-native.svg)](https://clojars.org/district0x/cljs-ipfs-native)
+[![Clojars Project](https://img.shields.io/clojars/v/district0x/cljs-ipfs-http-client.svg)](https://clojars.org/district0x/cljs-ipfs-http-client)
 
 Using:
 
 ```clojure
 (ns my.app
-  (:require 
-  [cljs-ipfs-api.core :as icore :refer [init-ipfs]]
-  [cljs-ipfs-api.files :as ifiles]))
+  (:require [cljs-ipfs-api.core :as icore :refer [init-ipfs]]
+            [cljs-ipfs-api.files :as ifiles]))
 ```
 
-## Docs
-https://district0x.github.io/cljs-ipfs-native/
+## Documentation
+https://district0x.github.io/cljs-ipfs-http-client/
 
 ## Usage
-So basically, stick with the js-ipfs-api [docs](https://github.com/ipfs/js-ipfs-api#api), all methods there have their kebab-cased version in this library. Also, return values and responses in callbacks are automatically kebab-cased and keywordized. You can provide IPFS instance as an additional first argument to each function, in case you'd need more than one connection:
+
+So basically, stick with the js-ipfs-api [docs](https://github.com/ipfs/js-ipfs-api#api), all methods there have their kebab-cased version in this library. Also, return values and responses in callbacks are automatically kebab-cased and keywordized. You can provide IPFS instance as an additional first argument to each function, in case you'd need more than one connection.
 
 ### Example call
 ```clojure
@@ -32,7 +34,7 @@ So basically, stick with the js-ipfs-api [docs](https://github.com/ipfs/js-ipfs-
 (ifiles/fls "/ipfs/QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/" (fn [err files]
                                                                       (info [err "ERROR"])
                                                                       (info [files "FILES"])))
-;;Files upload on NODEJS see files_test                                                                  
+;;Files upload on NODEJS see files_test
 ;;Files upload -- reagent
 (let [f (atom nil)]
     (fn []
@@ -48,8 +50,6 @@ So basically, stick with the js-ipfs-api [docs](https://github.com/ipfs/js-ipfs-
        [:input
         {:type "submit"
          :value "Import"}]]))
-
-                                                                      
 ```
 
 #### cljs.core.async integration
