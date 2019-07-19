@@ -1,36 +1,30 @@
-language: java
-script: boot test
-install:
-  - mkdir -p ~/bin
-  - export PATH=~/bin:$PATH
-  # Could use `latest` tag instead of version number
-  - curl -L https://github.com/boot-clj/boot-bin/releases/download/2.7.2/boot.sh -o ~/bin/boot
-  - chmod +x ~/bin/boot
-env:
-  matrix:
-    # Runs tests twice, using Clj 1.7 and 1.8
-    - BOOT_CLOJURE_VERSION=1.9.0
-    - BOOT_CLOJURE_VERSION=1.8.0
-jdk:
-  - oraclejdk8
-cache:
-  directories:
-  - $HOME/.m2
-  - $HOME/.boot/cache/bin
-  - $HOME/.boot/cache/lib
-  - $HOME/bin
+dist: xenial
+language: clojure
+node_js:
+- '11'
+script: lein doo node "nodejs-tests" once
+notifications:
+  slack:
+    on_success: always
+    on_failure: always
+    rooms:
+    - district0x:53vhalUfg0MitsQwzjP5PWdd#travis-ci
 before_install:
- - sudo apt-get --yes install wget nodejs npm
+- nvm use 11.0.0
 before_script:
-  - "echo 'Getting ipfs-update'"
-  - wget https://dist.ipfs.io/ipfs-update/v1.5.2/ipfs-update_v1.5.2_linux-amd64.tar.gz -O ipfs-update.tar.gz
-  - "echo 'Extracting'"
-  - tar -xzf ipfs-update.tar.gz
-  - "echo 'Installing latest IPFS'"
-  - ipfs-update/ipfs-update install latest
-  - "echo 'Init IPFS'"
-  - ipfs init 
-  - "echo 'NPM-deps install'"
-  - npm install
-  - "echo 'Running IPFS daemon'"
-  - ipfs daemon > /dev/null &
+- wget https://dist.ipfs.io/ipfs-update/v1.5.2/ipfs-update_v1.5.2_linux-amd64.tar.gz
+  -O ipfs-update.tar.gz
+- tar -xzf ipfs-update.tar.gz
+- ipfs-update/ipfs-update install latest
+- ipfs init
+- ipfs daemon > /dev/null &
+env:
+  global:
+  - secure: RynL9ftKvKPbWZlwTZKpUZKHDiqFjNb7gvHX7hJrPQ6gHrEaej8xibF850y5VSDJmpaAnKGoQbZVoPuUY71BA2srUAj8XZ/ZrDLyi7TSezsC8r6hC32FrxfwocN4DVRfITTa2Uktpev9Z6ajaCA1ruB1YledLX3qPpBjrqJRNrETpxww2fdXkM5saAHTP8z7tkpBR3knfq9O/xo99uy3C+GOfPBX6g1mt+tenMvIcXfQoMupMeEHgnDLNNBxRWPgssPJxR5HEGyflCsJ/JA2TO552hYqtQHLtWL4yjuhftZLzIIKpAeSBPEXbKBA3dR7w9EaqZxV4ZA+oEbZJ2kMvZEW4LMfXt7o/xjmKTZhvwNFa150jyoycF59dwlPXtSb9NdOYZtDBsy4K1CkslaYoMu0QTHgpsfkxjxFTXxJ71IU7jV/lHqynw/SsvnY8uJ+zEAyWVIa6mWKXu9wJ7e/4IBhULSpNQmJ/wzLW09WvSnwc20nOe3SVuKR9j27HYtnIzOc+lJP2pSJ0g+M4KMh6qUZ5LmkTjxeGmMSnHfCpnOSEZ0tQfRqZA78fdgNNPApQ9vxR5br/4fwKoCqPP3CAzOh7aYis466fFVqPNVbwXcRisyCYp+jd85zrkLcgL9R+zhvo7MoNJEUsvvVOlPqNn9e87Gsrc5yii5RN1Li7To=
+  - secure: pSnbDo1evhObdbRbKXiMLxAxUeymCdRIgIQbYB4jDctFj7OZmeUZhEPL9XrOmZIyrEp+vjRwRrgKwPWoPfflffbsbGeuFeUNqaGfOICl5JFzKJvOdQZC/Lt6DMgvjt8+1McU3qy+5CsKMigDmpmv/hn15+/ww+mO4sNV9deUNVPS6pL8GAj872W2SvOc4bNBUZwHmmpNpoSv2mFsar3lWAruri6Y4sciLGv90TApbHzqVnbHlRr6VVjh+4jhyC9kRCB+IMMr1SxB2YLDtLBw7Drxp7DyioByE4fDvAAT2twSIkFgnJKf3ao8KZ7e7fMLCpImuYsTFOhbncRSqNVDAaIDKYY4j8t+euMNFuTtpfkdPEWpeD1TNX4RxZpdSmUcs+d3mXp1y53se7e700EZTBwfhGoQieIyz6Y/jKNO850ikOq7HSOeXprkvbZoIs7RdcTpp05fs5amL3WtTvOxmgVzW/B+PEV/5xfbyELc8pUQEbb+xEKqEyaHnq892BS4Iu0t7b+iAjqUP0e78zvMmlDWNlOt8LK6yTfNJAk4ywf3xK6bhC1tgv7iydYt2L/ayEkpc1iu9jbwCopi65rLMz1CF1r/nz1Pt9g5IyMDuvN9D9AU+E3v+B7hRGVFr6vm4tOtJED4Wna4+wupYiZ487YOJJeZnIE1A+V7/QRsE2c=
+deploy:
+- provider: script
+  skip_cleanup: true
+  script: lein release :patch
+  on:
+    branch: master
