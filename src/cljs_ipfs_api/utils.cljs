@@ -66,7 +66,9 @@
   (not (= js/String (type x))))
 
 (defn web-http-call [url args {:keys [:opts :callback] :as params}]
-  (POST (format/format-url url opts)
+  (POST (format/format-url url (merge
+                                {"arg" (clojure.string/join " " (remove is-blob? args))}
+                                opts))
       (merge {:handler (fn [response] (callback nil response))
               :error-handler (fn [err] (callback err nil))
               :response-format (ajax/raw-response-format)}
