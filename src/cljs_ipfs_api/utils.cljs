@@ -67,7 +67,9 @@
 
 (defn web-http-call [url args {:keys [:opts :callback] :as params}]
   (POST (format/format-url url (merge
-                                {"arg" (clojure.string/join " " (remove is-blob? args))}
+                                (let [args (remove is-blob? args)]
+                                  (when-not [empty? args]
+                                    {"arg" (clojure.string/join " " args)}))
                                 opts))
       (merge {:handler (fn [response] (callback nil response))
               :error-handler (fn [err] (callback err nil))
@@ -123,10 +125,10 @@
     node-http-call
     web-http-call))
 
-(defn api-call [inst ac args params]
+(defn api-call [inst func args params]
   (http-call (str (:host inst)
-                  (:endpoint inst) "/" ac)
+                  (:endpoint inst) "/" func)
              args
              (merge inst
-                    {:opts (:options params)
+                    {:opts (:opts params)
                      :callback (:callback params)})))
