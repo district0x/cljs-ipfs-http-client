@@ -130,5 +130,5 @@
                   (:endpoint inst) "/" func)
              args
              (merge inst
-                    {:opts (:opts params)
+                    {:opts (:options params)
                      :callback (:callback params)})))
