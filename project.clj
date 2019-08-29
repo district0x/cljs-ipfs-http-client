@@ -1,4 +1,4 @@
-(defproject district0x/cljs-ipfs-http-client "1.0.4-SNAPSHOT"
+(defproject district0x/cljs-ipfs-http-client "1.0.5-SNAPSHOT"
   :description "library for calling ipfs HTTP API"
   :url "https://github.com/district0x/cljs-ipfs-http-client"
   :license {:name "Eclipse Public License"
