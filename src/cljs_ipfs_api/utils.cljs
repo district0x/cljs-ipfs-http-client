@@ -125,10 +125,10 @@
     node-http-call
     web-http-call))
 
-(defn api-call [inst func args params]
+(defn api-call [inst func args {:keys [:options :opts] :as params}]
   (http-call (str (:host inst)
                   (:endpoint inst) "/" func)
              args
              (merge inst
-                    {:opts (:opts params)
+                    {:opts (or opts options)
                      :callback (:callback params)})))
