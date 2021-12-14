@@ -71,7 +71,7 @@
                                   (when-not [empty? args]
                                     {"arg" (clojure.string/join " " args)}))
                                 opts))
-      (merge {:handler (fn [response] (callback nil response))
+      (merge {:handler (fn [response] (callback nil (js->cljkk (.parse js/JSON response))))
               :error-handler (fn [err] (callback err nil))
               :response-format (ajax/raw-response-format)}
              (when-let [b (first (filter is-blob? args))]
