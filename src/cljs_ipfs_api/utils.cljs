@@ -63,21 +63,31 @@
     callback))
 
 (defn is-blob? [x]
-  (not (= js/String (type x))))
+  "Checks if the argument x is a Blob (https://developer.mozilla.org/en-US/docs/Web/API/Blob)
+
+  In older Node.js versions Blob might not be defined, so it uses name of prototype instead"
+  (if (exists? js/Blob)
+               (= (type x) js/Blob)
+               (= (. (type x) -name) "Blob")))
+
+(def last-response (atom nil))
 
 (defn web-http-call [url args {:keys [:opts :callback] :as params}]
-  (POST (format/format-url url (merge
-                                (let [args (remove is-blob? args)]
-                                  (when-not [empty? args]
-                                    {"arg" (clojure.string/join " " args)}))
-                                opts))
-      (merge {:handler (fn [response] (callback nil (js->cljkk (.parse js/JSON response))))
-              :error-handler (fn [err] (callback err nil))
-              :response-format (ajax/raw-response-format)}
-             (when-let [b (first (filter is-blob? args))]
-               {:body (doto
-                          (js/FormData.)
-                        (.append "file" b))}))))
+  (let [opts (dissoc opts :req-opts) ; req-opts are used on Node.js platform (back-end) AJAX library
+        blobless-args (remove is-blob? args)
+        basic-opts (when-not (empty? blobless-args) {"arg" (clojure.string/join " " blobless-args)})
+        url-extra-opts (merge basic-opts opts)
+        url-with-params (format/format-url url url-extra-opts)
+        possible-blob (first (filter is-blob? args))
+        request-body (when possible-blob (doto (js/FormData.) (.append "file" possible-blob)))
+        update-response-run-callback (fn [response]
+                  (reset! last-response response)
+                  (callback nil (js->cljkk response)))
+        request-settings {:handler update-response-run-callback
+                          :error-handler (fn [err] (callback err nil))
+                          :response-format (ajax/raw-response-format)
+                          :body request-body}]
+    (POST url-with-params request-settings)))
 
 (defn node-http-call [url args params]
   (if-let [cb (:callback params)]
