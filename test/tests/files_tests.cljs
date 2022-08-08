@@ -2,26 +2,34 @@
   (:require-macros [cljs.test :refer [deftest testing is async]])
   (:require [cljs.test :as t]
             [cljs-ipfs-api.core :as core]
-            [cljs-ipfs-api.files :as files]))
+            [cljs-ipfs-api.files :as files]
+            ; ["node:buffer" :refer [Blob]]
+            ))
+
+; (defn create-blob-nodejs [data]
+;   (require "node:buffer" :refer [Blob]))
+
+; (defn to-blob [data]
+;   (if (= cljs.core/*target* "nodejs")
+;     (create-blob-nodejs data)
+;     (create-blob-browser data)))
+
+(defn to-blob [data]
+  (js/Blob. [(str data)] {:type "text/plain"}))
+
+; (defn to-blob [data]
+;   (Blob. [(str data)] {:type "text/plain"}))
 
 (deftest add-test []
   (async done
          (core/init-ipfs)
-         (let [fs (js/require "fs")
-               dw (js/require "buffer-dataview")]
-           (.readFile fs
-                      "resources/test/testfile.jpg"
-                      (fn [err data]
-                        (if-not err
-                          (files/add
-                           data
-                           (fn [err files]
-                             (is (= err nil))
-                             (is (= files
-                                    {:Name "QmP6LozGREM9RWNv7EvER8shCQi1KzwYVKZFnHPNsKGbRd",
-                                     :Hash "QmP6LozGREM9RWNv7EvER8shCQi1KzwYVKZFnHPNsKGbRd",
-                                     :Size "141584"}))
-                             (done)))))))))
+         (files/add (to-blob "vladislav baby don't hurt me")
+                    (fn [err files]
+                      (is (= err nil))
+                      (is (= (js->clj (.parse js/JSON files) :keywordize-keys true)
+                             {:Name "blob" :Hash "QmbAmvPFuGeiTXzpyFDSRSkcaoJZuhprsMybkXZpJSdPcu" :Size "36"}))
+                      (done)))))
+
 (deftest ls-test []
   (async done
          (core/init-ipfs)
@@ -34,7 +42,7 @@
 (deftest fget-test []
   (async done
          (core/init-ipfs)
-         (files/fget "/ipfs/QmP6LozGREM9RWNv7EvER8shCQi1KzwYVKZFnHPNsKGbRd"
+         (files/fget "QmbAmvPFuGeiTXzpyFDSRSkcaoJZuhprsMybkXZpJSdPcu"
                      {:req-opts {:compress true}}
                      (fn [err content]
                        (is (= err nil))

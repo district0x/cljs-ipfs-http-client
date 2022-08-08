@@ -2,12 +2,13 @@
 
 (def ^:dynamic *ipfs-instance* (atom nil))
 
+(defn get-instance [] @*ipfs-instance*)
+
 (defn init-ipfs
   ([] (init-ipfs {}))
   ([params]
-   (let [i (merge
-            {:host "http://127.0.0.1:5001"
-             :endpoint "/api/v0"}
-            params)]
-     (reset! *ipfs-instance* i)
-     i)))
+   (let [instance (merge {:host "http://host-machine:5001" :endpoint "/api/v0"} params)]
+     (if (nil? @*ipfs-instance*)
+       (reset! *ipfs-instance* instance)
+       (println "Not initing, already there"))
+     instance)))
