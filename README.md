@@ -3,7 +3,7 @@
 ClojureScript library for calling the [IPFS HTTP API](https://docs.ipfs.io/reference/api/http/) <br>
 <br>
 
-[![Build Status](https://travis-ci.org/district0x/cljs-ipfs-http-client.svg?branch=master)](https://travis-ci.org/district0x/cljs-ipfs-http-client)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/district0x/cljs-ipfs-http-client/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/district0x/cljs-ipfs-http-client/tree/master)
 
 ## Installation
 
@@ -53,4 +53,40 @@ So basically, stick with the js-ipfs-api [docs](https://github.com/ipfs/js-ipfs-
 ```
 
 #### cljs.core.async integration
+
 You can also provide an async channel instead of the callback function
+
+# New build, test and release commands
+
+As this library is meant to work both in browsers and on Node.js (server), it must be tested on both as well.
+Additionally CI runs the tests slightly different way, so that's the 3rd test environment.
+  - it's still in browser, but CI gets success vs failure depending on the
+  - browser process exit code so a bit of extra work is needed to get it out from JS (Karma is used for that)
+
+## Node.js
+
+1. Build: `npx shadow-cljs compile test-node`
+2. Tests: `node out/node-tests.js`
+
+## Browser
+
+1. Build: `npx shadow-cljs watch test-browser`
+2. Tests: http://d0x-vm:6502
+
+## CI (Headless Chrome, Karma)
+
+1. Build: `npx shadow-cljs compile test-ci`
+2. Tests:
+    ```
+    CHROME_BIN=`which chromium-browser` npx karma start karma.conf.js --single-run
+    ```
+
+#### inspect on headless chrome on another chrome instance
+
+1. Run headless chrome: `chromium-browser --headless --remote-debugging-port=9222 --remote-debugging-address=0.0.0.0 --allowed-origins="*" https://chromium.org`
+2. Open `chrome://inspect/#devices` and configure remote target with *IP ADDRESS* (hostname doesn't work)
+
+## Build & release with `deps.edn` and `tools.build`
+
+1. Build: `clj -T:build jar`
+2. Release: `clj -T:build deploy`

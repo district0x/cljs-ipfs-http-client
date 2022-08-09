@@ -5,3 +5,8 @@ node_modules/
 tests-output/
 package-lock.json
 pom.xml
+out
+yarn-error.log
+.cpcache
+.shadow-cljs
+Session.vim

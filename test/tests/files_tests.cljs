@@ -2,41 +2,55 @@
   (:require-macros [cljs.test :refer [deftest testing is async]])
   (:require [cljs.test :as t]
             [cljs-ipfs-api.core :as core]
-            [cljs-ipfs-api.files :as files]))
+            [cljs-ipfs-api.files :as files]
+            [cljs.reader]
+            ["buffer" :refer [Buffer]]))
+
+(defn to-buffer [data]
+  (.from Buffer data))
 
 (deftest add-test []
   (async done
          (core/init-ipfs)
-         (let [fs (js/require "fs")
-               dw (js/require "buffer-dataview")]
-           (.readFile fs
-                      "resources/test/testfile.jpg"
-                      (fn [err data]
-                        (if-not err
-                          (files/add
-                           data
-                           (fn [err files]
-                             (is (= err nil))
-                             (is (= files
-                                    {:Name "QmP6LozGREM9RWNv7EvER8shCQi1KzwYVKZFnHPNsKGbRd",
-                                     :Hash "QmP6LozGREM9RWNv7EvER8shCQi1KzwYVKZFnHPNsKGbRd",
-                                     :Size "141584"}))
-                             (done)))))))))
+         (files/add (to-buffer "vladislav baby don't hurt me")
+                    (fn [err files]
+                      (is (= err nil))
+                      (is (= (select-keys files [:Hash :Size])
+                             {:Hash "QmbAmvPFuGeiTXzpyFDSRSkcaoJZuhprsMybkXZpJSdPcu" :Size "36"}))
+                      (done)))))
+
 (deftest ls-test []
   (async done
          (core/init-ipfs)
-         (files/fls "/ipfs/QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/"
+         (files/fls "/ipfs/QmbAmvPFuGeiTXzpyFDSRSkcaoJZuhprsMybkXZpJSdPcu"
                     (fn [err files]
                       (is (= err nil))
                       (is (not (empty? files)))
                       (done)))))
 
+(defn parse-ipfs-content [content]
+  (-> (re-find #".+?(\{.+\})" content)
+      second
+      (js->clj :keywordize-keys true)
+      cljs.reader/read-string))
+
 (deftest fget-test []
   (async done
          (core/init-ipfs)
-         (files/fget "/ipfs/QmP6LozGREM9RWNv7EvER8shCQi1KzwYVKZFnHPNsKGbRd"
+         (files/fget "QmU5RLaShDjmXD2qb123Soj3nHKgQn76d8jab8mNp55X1V"
                      {:req-opts {:compress true}}
                      (fn [err content]
                        (is (= err nil))
                        (is (> (count content) 0))
+                       (is (= (parse-ipfs-content content) {:this-is "EDN FILE"}))
+                       (done)))))
+
+(deftest cat-test []
+  (async done
+         (core/init-ipfs)
+         (files/fcat "QmU5RLaShDjmXD2qb123Soj3nHKgQn76d8jab8mNp55X1V"
+                     {:req-opts {:compress true}}
+                     (fn [err content]
+                       (is (= err nil))
+                       (is (= (cljs.reader/read-string content) {:this-is "EDN FILE"}))
                        (done)))))
