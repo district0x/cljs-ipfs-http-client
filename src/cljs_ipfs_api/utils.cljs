@@ -1,11 +1,12 @@
 (ns cljs-ipfs-api.utils
-  (:require [ajax.core :as ajax :refer [POST]]
+  (:require
             [camel-snake-kebab.core :as cs :include-macros true]
             [camel-snake-kebab.extras :refer [transform-keys]]
             [cljs.core.async :as async :refer [<! >! chan]]
             [clojure.string :as string]
             [district.format :as format]
             ["form-data" :as FormData]
+            ["buffer" :refer [Buffer]]
             ["axios" :as axios])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
@@ -62,117 +63,37 @@
 (defn wrap-callback [f-n]
   (let [callback (fn callback [err res]
                    (if (instance? cljs.core.async.impl.channels/ManyToManyChannel f-n)
-                     (do
-                       (println ">>> CALLBACK CHANNELS" {:err err :res res :f-n f-n})
-                       (go (>! f-n [(js->cljkk err)
-                                    (js->cljkk res)])))
+                     (go (>! f-n [(js->cljkk err)
+                                  (js->cljkk res)]))
                      (if (fn? f-n)
-                       (do
-                         (println ">>> CALLBACK FN" {:err err :res res})
-                         (f-n err ; (safe-parse-js->cljkk err)
-                              res ; (safe-parse-js->cljkk res)
-                              ))
+                       (f-n err res)
                        f-n)))]
     callback))
 
-(defn is-blob? [x]
-  "Checks if the argument x is a Blob (https://developer.mozilla.org/en-US/docs/Web/API/Blob)
-  In older Node.js versions Blob might not be defined, so it uses name of prototype instead"
-  (if (exists? js/Blob)
-               (= (type x) js/Blob)
-               (= (. (type x) -name) "Blob")))
+(defn is-buffer? [x]
+  (= Buffer (type x)))
 
 (def last-response (atom nil))
 
-(defn web-http-call [url args {:keys [:opts :callback] :as params}]
+(defn axios-call [url args {:keys [:opts :callback] :as params}]
   (let [opts (dissoc opts :req-opts) ; req-opts are used on Node.js platform (back-end) AJAX library
-        blobless-args (remove is-blob? args)
+        blobless-args (remove is-buffer? args)
         basic-opts (when-not (empty? blobless-args) {"arg" (clojure.string/join " " blobless-args)})
         url-extra-opts (merge basic-opts opts)
         url-with-params (format/format-url url url-extra-opts)
-        possible-blob (first (filter is-blob? args))
-        _ (println ">>> possible blob?" {:possible-blob possible-blob :is-blob? (is-blob? (first args))})
-        ; request-body (when possible-blob (doto (js/FormData.) (.append "file" possible-blob)))
-        request-body (when possible-blob (doto (FormData.) (.append "file" possible-blob)))
+        possible-buffer (first (filter is-buffer? args))
+        request-body (when possible-buffer (doto (FormData.) (.append "file" possible-buffer)))
         update-response-run-callback (fn [response]
-                  (reset! last-response response)
-                  (callback nil (js->cljkk response)))
-        request-settings {:handler update-response-run-callback
-                          :error-handler (fn [err] (callback err nil))
-                          :response-format (ajax/raw-response-format)
-                          :body request-body}]
-    (POST url-with-params request-settings)))
+                                       (let [response-data (.-data response)]
+                                         (reset! last-response response-data)
+                                         (callback nil (js->cljkk response-data))))]
+    (-> (axios (clj->js {:method "POST" :url url-with-params :data request-body}))
+        (.then update-response-run-callback)
+        (.catch #(callback % nil)))))
 
-#_ (defn node-http-call [url args params]
-  (println ">>>>> web-http-call" {:url url :args args :params params})
-
-  (if-let [cb (:callback params)]
-    (let [rm (js/require "request")
-          fs (js/require "fs")
-          on-done (fn [err oresp obody]
-                    (let [err (js->cljkk err)
-                          resp (js->cljkk oresp)]
-
-                      (cond
-                        err
-                        (cb err nil)
-
-                        (= (.-statusCode resp) 200)
-                        (if (get-in params [:opts :binary?])
-                          ;; if :binary? option is set, then obody will be a Buffer with binary data
-                          ;; so just return it as it is
-                          (cb nil obody)
-
-                          ;; response body is going to be json
-                          (cb nil
-                             (try
-                               (.parse js/JSON (js->cljkk obody))
-                               (catch js/SyntaxError e
-                                 (js->cljkk obody)))))
-                        :else (cb (.-statusMessage resp) nil)))) form (when-let [b (first (filter is-blob? args))] {:formData {:file b}})
-          _ (println ">>>>> FORM for REQUEST: " form)
-          req-options (clj->js (merge {:url url
-                                       :qs (merge {:arg (clojure.string/join " " (remove is-blob? args))}
-                                                  (get-in params [:opts :req-opts]))}
-                                      ;; if we have :binary? option lets set encoding nil
-                                      ;; nodejs doc says that a post with encoding nil will return
-                                      ;; the response body in a Buffer instead of a string
-                                      (when (get-in params [:opts :binary?]) {:encoding nil})
-                                      form))
-          _ (println ">>> JS REQUEST with options" req-options)
-          req (.post rm req-options on-done)]
-      (when-let [out (get-in params [:opts :pipe-to])]
-        (.pipe req out)))))
-
-(defn node-http-call [url args params]
-  (println ">>>>>> !!! NEW node-http-call running")
-  (let [callback (params :callback)
-        ; _ (callback "FIRST CALLBACK ARG")
-        form (doto (new FormData) (.append ,,, "file" (clj->js (first args)) "upload.edn"))
-        _ (println "🐛🐛🐛" {:form form :params params :callback callback :fn? (fn? callback)})
-        result-promise (doto
-                         (.post axios url form {:headers (.getHeaders form)})
-                         (.then (fn [result]
-                                  ; (println "result is: " {:res result :type (type (.-data result))})
-
-                                  ; (println "🐛 THEN " {:err _ :result result} "\n\n" (type result) "\n\n")
-                                  (callback nil (.-data result))
-                                  ; (apply callback nil (js->cljk (.-data result)))
-                                  ; (apply callback [nil (.-data result)])
-                                     ))
-                         (.catch (fn [error]
-                                   (println "🐛 ERROR " error)
-                                   (callback error nil)
-                                      )))]))
-
-(def http-call
-  (if (= cljs.core/*target* "nodejs")
-    node-http-call
-    web-http-call
-    ))
 
 (defn api-call [inst func args {:keys [:options :opts] :as params}]
-  (http-call (str (:host inst)
+  (axios-call (str (:host inst)
                   (:endpoint inst) "/" func)
              args
              (merge inst

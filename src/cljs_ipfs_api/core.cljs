@@ -9,6 +9,5 @@
   ([params]
    (let [instance (merge {:host "http://host-machine:5001" :endpoint "/api/v0"} params)]
      (if (nil? @*ipfs-instance*)
-       (reset! *ipfs-instance* instance)
-       (println "Not initing, already there"))
+       (reset! *ipfs-instance* instance))
      instance)))

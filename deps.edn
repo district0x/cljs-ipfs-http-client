@@ -2,14 +2,11 @@
  :mvn/repos {"central" {:url "https://repo1.maven.org/maven2/"}
              "clojars" {:url "https://clojars.org/repo"}}
  :deps
- {
-  org.clojure/clojure {:mvn/version "1.11.1"}
+ {org.clojure/clojure {:mvn/version "1.11.1"}
   thheller/shadow-cljs {:mvn/version "2.19.8"}
   org.clojure/clojurescript {:mvn/version "1.11.60"}
-  cljs-ajax/cljs-ajax {:mvn/version "0.8.4"}
   camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
-  district0x/district-format {:mvn/version "1.0.6"}
-  }
+  district0x/district-format {:mvn/version "1.0.6"}}
 
  :install-deps true
  :aliases
@@ -22,5 +19,4 @@
                  slipset/deps-deploy {:mvn/version "RELEASE"}}
           :ns-default build}
   :deploy {:replace-deps {slipset/deps-deploy {:mvn/version "RELEASE"}}
-           :exec-fn deps-deploy.deps-deploy/deploy}}
- }
+           :exec-fn deps-deploy.deps-deploy/deploy}}}

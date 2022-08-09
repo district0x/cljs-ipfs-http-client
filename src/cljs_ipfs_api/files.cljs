@@ -6,7 +6,7 @@
   [[add [data [options] [callback]]]
    [files.addReadableStream [data [options] [callback]]]
    [files.addPullStream [[options]]]
-   [files.cat [ipfs-path [options] [callback]] fcat]
+   [cat [ipfs-path [options] [callback]] fcat]
    [files.catReadableStream (ipfsPath [options])]
    [files.catPullStream [ipfsPath [options]]]
    [get [ipfsPath [options], [callback]] fget]
