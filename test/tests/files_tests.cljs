@@ -2,12 +2,9 @@
   (:require-macros [cljs.test :refer [deftest testing is async]])
   (:require [cljs.test :as t]
             [cljs-ipfs-api.core :as core]
+            [cljs-ipfs-api.utils :refer [to-buffer]]
             [cljs-ipfs-api.files :as files]
-            [cljs.reader]
-            ["buffer" :refer [Buffer]]))
-
-(defn to-buffer [data]
-  (.from Buffer data))
+            [cljs.reader]))
 
 (deftest add-test []
   (async done
@@ -19,10 +16,19 @@
                              {:Hash "QmbAmvPFuGeiTXzpyFDSRSkcaoJZuhprsMybkXZpJSdPcu" :Size "36"}))
                       (done)))))
 
-(deftest ls-test []
+(deftest ls-file-test []
   (async done
          (core/init-ipfs)
          (files/fls "/ipfs/QmbAmvPFuGeiTXzpyFDSRSkcaoJZuhprsMybkXZpJSdPcu"
+                    (fn [err files]
+                      (is (= err nil))
+                      (is (not (empty? files)))
+                      (done)))))
+
+(deftest ls-folder-test []
+  (async done
+         (core/init-ipfs)
+         (files/fls "/ipfs/QmTeW79w7QQ6Npa3b1d5tANreCDxF2iDaAPsDvW6KtLmfB"
                     (fn [err files]
                       (is (= err nil))
                       (is (not (empty? files)))

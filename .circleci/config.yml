@@ -8,14 +8,29 @@ jobs:
         aws_auth:
             aws_access_key_id: $AWS_ACCESS_KEY_ID
             aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
-      # Secondary container image on common network.
-      - image: ipfs/go-ipfs
     steps:
       - checkout
       - restore_cache:
           name: Restore npm package cache
           keys:
             - npm-packages-{{ checksum "yarn.lock" }}
+      - run:
+          name: Download & set up IPFS
+          command: |
+            cd ~
+            wget https://github.com/ipfs/kubo/releases/download/v0.14.0/kubo_v0.14.0_linux-amd64.tar.gz
+            tar zxvf kubo_v0.14.0_linux-amd64.tar.gz
+            mv kubo/ipfs ~/bin
+            ~/bin/ipfs init
+            ~/bin/ipfs config --json API.HTTPHeaders.Access-Control-Allow-Origin '["*"]'
+            ~/bin/ipfs config --json API.HTTPHeaders.Access-Control-Allow-Methods '["GET", "POST"]'
+            ~/bin/ipfs config --json API.HTTPHeaders.Access-Control-Allow-Headers '["Authorization"]'
+            ~/bin/ipfs config --json API.HTTPHeaders.Access-Control-Expose-Headers '["Location"]'
+            ~/bin/ipfs config --json API.HTTPHeaders.Access-Control-Allow-Credentials '["true"]'
+      - run:
+          name: Run IPFS daemon in the background
+          background: true
+          command: ~/bin/ipfs daemon
       - run:
           name: Install node modules
           command: yarn install
@@ -34,9 +49,9 @@ jobs:
           name: Compile Browser (karma) tests
           command: npx shadow-cljs compile test-ci
       # Disabled karma tests until I figure out why they fail on CI (pass locally)
-      # - run:
-      #     name: Run Browser (karma) tests
-      #     command: CHROME_BIN=`which chromium-browser` npx karma start karma.conf.js --single-run
+      - run:
+          name: Run Browser (karma) tests
+          command: CHROME_BIN=`which chromium-browser` npx karma start karma.conf.js --single-run
 
   deploy:
     working_directory: ~/ci

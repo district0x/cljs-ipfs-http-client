@@ -10,6 +10,9 @@
             ["axios" :as axios])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
+(defn to-buffer [data]
+  (.from Buffer data))
+
 (defn safe-case [case-f]
   (fn [x]
     (cond-> (subs (name x) 1)
