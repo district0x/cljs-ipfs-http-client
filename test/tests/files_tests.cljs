@@ -43,20 +43,26 @@
 (deftest fget-test []
   (async done
          (core/init-ipfs)
-         (files/fget "QmU5RLaShDjmXD2qb123Soj3nHKgQn76d8jab8mNp55X1V"
-                     {:req-opts {:compress true}}
-                     (fn [err content]
-                       (is (= err nil))
-                       (is (> (count content) 0))
-                       (is (= (parse-ipfs-content content) {:this-is "EDN FILE"}))
-                       (done)))))
+         (files/add (to-buffer "{:this-is \"EDN FILE\"}")
+                    (fn [err files]
+                      (let [hash (:Hash files)]
+                        (files/fget hash
+                                    {:req-opts {:compress true}}
+                                    (fn [err content]
+                                      (is (= err nil))
+                                      (is (> (count content) 0))
+                                      (is (= (parse-ipfs-content content) {:this-is "EDN FILE"}))
+                                      (done))))))))
 
 (deftest cat-test []
   (async done
          (core/init-ipfs)
-         (files/fcat "QmU5RLaShDjmXD2qb123Soj3nHKgQn76d8jab8mNp55X1V"
-                     {:req-opts {:compress true}}
-                     (fn [err content]
-                       (is (= err nil))
-                       (is (= (cljs.reader/read-string content) {:this-is "EDN FILE"}))
-                       (done)))))
+         (files/add (to-buffer "{:this-is \"EDN FILE\"}")
+                    (fn [err files]
+                      (let [hash (:Hash files)]
+                        (files/fcat hash
+                                    {:req-opts {:compress true}}
+                                    (fn [err content]
+                                      (is (= err nil))
+                                      (is (= (cljs.reader/read-string content) {:this-is "EDN FILE"}))
+                                      (done))))))))
