@@ -7,7 +7,8 @@
             [district.format :as format]
             ["form-data" :as FormData]
             ["buffer" :refer [Buffer]]
-            ["axios" :as axios])
+            ["axios" :as axios]
+            [clojure.string :as str])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defn to-buffer [data]
@@ -73,21 +74,31 @@
                        f-n)))]
     callback))
 
-(defn is-buffer? [x]
-  (= Buffer (type x)))
+(defn is-buffer-or-blob? [x]
+  (or (instance? Buffer x)
+      (instance? js/Blob x)))
 
 (def last-response (atom nil))
 
+(defn is-ndjson? [response response-data]
+  (and (= (type response-data) js/String) (= "application/json" (aget (.-headers response) "content-type"))))
+
+(defn parse-ndjson [data]
+  (->> data
+      (str/split-lines)
+      (map #(.parse js/JSON %))))
+
 (defn axios-call [url args {:keys [:opts :callback] :as params}]
   (let [opts (dissoc opts :req-opts) ; req-opts are used on Node.js platform (back-end) AJAX library
-        blobless-args (remove is-buffer? args)
+        blobless-args (remove is-buffer-or-blob? args)
         basic-opts (when-not (empty? blobless-args) {"arg" (clojure.string/join " " blobless-args)})
         url-extra-opts (merge basic-opts opts)
         url-with-params (format/format-url url url-extra-opts)
-        possible-buffer (first (filter is-buffer? args))
+        possible-buffer (first (filter is-buffer-or-blob? args))
         request-body (when possible-buffer (doto (FormData.) (.append "file" possible-buffer)))
         update-response-run-callback (fn [response]
-                                       (let [response-data (.-data response)]
+                                       (let [response-data (.-data response)
+                                             response-data (if (is-ndjson? response response-data) (parse-ndjson response-data) response-data)]
                                          (reset! last-response response-data)
                                          (callback nil (js->cljkk response-data))))]
     (-> (axios (clj->js {:method "POST" :url url-with-params :data request-body}))
