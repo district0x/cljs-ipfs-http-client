@@ -89,19 +89,22 @@
       (map #(.parse js/JSON %))))
 
 (defn axios-call [url args {:keys [:opts :callback] :as params}]
-  (let [opts (dissoc opts :req-opts) ; req-opts are used on Node.js platform (back-end) AJAX library
-        blobless-args (remove is-buffer-or-blob? args)
-        basic-opts (when-not (empty? blobless-args) {"arg" (clojure.string/join " " blobless-args)})
+  (let [blobless-args (remove is-buffer-or-blob? args)
+        basic-opts (when-not (empty? blobless-args) {:arg (clojure.string/join " " blobless-args)})
         url-extra-opts (merge basic-opts opts)
+        binary? (get opts :binary?)
         url-with-params (format/format-url url url-extra-opts)
         possible-buffer (first (filter is-buffer-or-blob? args))
         request-body (when possible-buffer (doto (FormData.) (.append "file" possible-buffer)))
         update-response-run-callback (fn [response]
                                        (let [response-data (.-data response)
-                                             response-data (if (is-ndjson? response response-data) (parse-ndjson response-data) response-data)]
+                                             response-data (if (and (not binary?) (is-ndjson? response response-data))
+                                                             (parse-ndjson response-data) response-data)]
                                          (reset! last-response response-data)
-                                         (callback nil (js->cljkk response-data))))]
-    (-> (axios (clj->js {:method "POST" :url url-with-params :data request-body}))
+                                         (if binary?
+                                           (callback nil response-data)
+                                           (callback nil (js->cljkk response-data)))))]
+    (-> (axios (clj->js (merge {:method "POST" :url url-with-params :data request-body} (when binary? {:responseType "arraybuffer" }))))
         (.then update-response-run-callback)
         (.catch #(callback % nil)))))
 
